@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../utils/format.dart';
 import '../models/chat.dart';
 import '../theme/app_theme.dart';
 import 'avatar.dart';
@@ -12,12 +12,7 @@ class ChatTile extends StatelessWidget {
 
   String _formatTime(DateTime? dt) {
     if (dt == null) return '';
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final d = DateTime(dt.year, dt.month, dt.day);
-    if (d == today) return DateFormat('hh:mm a').format(dt);
-    if (today.difference(d).inDays == 1) return 'Kal';
-    return DateFormat('dd/MM/yy').format(dt);
+    return formatChatTime(dt);
   }
 
   @override

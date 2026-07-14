@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   static const Color primary     = Color(0xFF2AABEE);
@@ -43,7 +42,7 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.accent,
       ),
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
+      // default system font (Roboto) — clean aur fast
       appBarTheme: const AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,

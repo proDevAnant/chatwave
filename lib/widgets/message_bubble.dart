@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../utils/format.dart';
 import '../models/message.dart';
 import '../theme/app_theme.dart';
 
@@ -41,7 +41,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildBubble(BuildContext context) {
-    final time = DateFormat('hh:mm a').format(message.createdAt);
+    final time = formatClock(message.createdAt);
     final radius = BorderRadius.only(
       topLeft: const Radius.circular(20),
       topRight: const Radius.circular(20),
