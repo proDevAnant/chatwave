@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/message.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -94,6 +95,79 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {}
   }
 
+  void _onMessageLongPress(Message msg, bool isMe) {
+    // Optimistic (abhi tak sync nahi hua) message delete nahi kar sakte
+    if (msg.id <= 0) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.copy_rounded, color: AppColors.primary),
+              title: const Text('Copy'),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: msg.content));
+                Navigator.pop(ctx);
+                _snack('Copy ho gaya');
+              },
+            ),
+            if (isMe)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('Delete for everyone',
+                    style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _deleteMessage(msg);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteMessage(Message msg) async {
+    // Turant UI se hatao (optimistic)
+    setState(() {
+      _messages.removeWhere((m) => m.id == msg.id);
+      _lastCount = _messages.length;
+    });
+    try {
+      await ApiService.deleteMessage(msg.id, _myId);
+    } catch (_) {
+      _snack('Delete nahi ho paaya');
+      _load(silent: true);
+    }
+  }
+
+  void _snack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final peerInitials = _initials(widget.peerName);
@@ -162,10 +236,13 @@ class _ChatScreenState extends State<ChatScreen> {
                           final msg = _messages[i];
                           final isMe = msg.senderId == _myId;
                           final isLast = i == _messages.length - 1;
-                          return MessageBubble(
-                            message: msg,
-                            isMe: isMe,
-                            animateIn: isLast,
+                          return GestureDetector(
+                            onLongPress: () => _onMessageLongPress(msg, isMe),
+                            child: MessageBubble(
+                              message: msg,
+                              isMe: isMe,
+                              animateIn: isLast,
+                            ),
                           );
                         },
                       ),

@@ -80,6 +80,14 @@ class ApiService {
     return (data['messages'] as List).map((e) => Message.fromJson(e)).toList();
   }
 
+  static Future<void> deleteMessage(int messageId, int userId) async {
+    final data = await _post('delete_message.php', {
+      'message_id': messageId,
+      'user_id': userId,
+    });
+    if (data['success'] != true) throw ApiException(data['message'] ?? 'Delete fail');
+  }
+
   static Future<Message> sendMessage(
       int senderId, int receiverId, String content) async {
     final data = await _post('send_message.php', {
